@@ -1,0 +1,63 @@
+function doPost(e) {
+  // Buka sheet
+  let sheetUrl = "https://docs.google.com/spreadsheets/d/1iHfVog_w9c71RLvsKd5JGecsOVxr6qcZmqKgG9cj04o/edit#gid=0";
+  let file = SpreadsheetApp.openByUrl(sheetUrl);
+  let sheet = file.getSheetByName("Sheet1");
+
+  let senderMessage = 'Penawaran Premi\nMohon untuk lengkapi data kendaraan dibawah ini :\n\nNama Tertanggung : Sukirman\nMerk  : Toyota\nType : Kijang Innova Zenix 2.0 CVT\nTahun : 2022\nNopol : L1TBA\nHarga : 403000000';
+
+  // Rapikan data
+  //let req = JSON.stringify(e).replace(/\\/g, "").replace("}\"", "}").replace("\"{", "{");
+  //let reqJson = JSON.parse(req);
+  // Ambil pesan yang dikirim oleh pengirim
+  //let senderMessage = JSON.stringify(reqJson["postData"]["contents"]["senderMessage"]);
+
+  // Definisikan pola yang akan dicocokkan dengan teks
+  let namaTertanggungRegex = /Nama Tertanggung\s*:\s*(.*)/;
+  let merkRegex = /Merk\s*:\s*(.*)/;
+  let typeRegex = /Type\s*:\s*(.*)/;
+  let tahunRegex = /Tahun\s*:\s*(.*)/;
+  let nopolRegex = /Nopol\s*:\s*(.*)/;
+  let hargaRegex = /Harga\s*:\s*(\d+(?:[.,]\d{3})*(?:[.,]\d+)?)/;
+
+  // Cocokkan pola dengan teks
+  let namaTertanggungMatch = senderMessage.match(namaTertanggungRegex);
+  let merkMatch = senderMessage.match(merkRegex);
+  let typeMatch = senderMessage.match(typeRegex);
+  let tahunMatch = senderMessage.match(tahunRegex);
+  let nopolMatch = senderMessage.match(nopolRegex);
+  let hargaMatch = senderMessage.match(hargaRegex);
+
+  // Ambil nilai dari hasil cocokkan pola
+  let namaTertanggung = namaTertanggungMatch[1];
+  let merk = merkMatch[1];
+  let type = typeMatch[1];
+  let tahun = tahunMatch[1];
+  let nopol = nopolMatch[1];
+  let harga = parseFloat(hargaMatch[1]);
+  
+  // Membuat ID
+  let row = sheet.getLastRow() + 1;
+  let prefixIdPendaftar = 220000;
+  let idPendaftar = `A-${prefixIdPendaftar + row - 1}`;
+
+  // Insert data
+  sheet.getRange(`A${row}`).setValue(idPendaftar);
+  sheet.getRange(`B${row}`).setValue(namaTertanggung);
+  sheet.getRange(`C${row}`).setValue(merk);
+  sheet.getRange(`D${row}`).setValue(type);
+  sheet.getRange(`E${row}`).setValue(tahun);
+  sheet.getRange(`F${row}`).setValue(nopol);
+  sheet.getRange(`G${row}`).setValue(harga);
+
+  // Respon
+  var response = {
+    data: [
+      {
+        message: `Terima kasih, ananda ${namaTertanggung} berhasil terdaftar dengan ID ${idPendaftar}.`
+      }
+    ]
+  };
+
+  return ContentService.createTextOutput(JSON.stringify(response));
+}
